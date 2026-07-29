@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guess The Repo!</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    header p {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .game-container {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 850px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 14px 16px;
+      font-size: 1rem;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      background: #f8f9fa;
+      transition: border-color 0.2s;
+    }
+
+    .input-row input:focus {
+      border-color: #667eea;
+    }
+
+    .input-row .btn-guess {
+      padding: 14px 28px;
+      background: #1a1a2e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+
+    .input-row .btn-guess:hover {
+      background: #2d2d5e;
+    }
+
+    .autocomplete {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 120px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 0 0 8px 8px;
+      max-height: 240px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .autocomplete.visible { display: block; }
+
+    .autocomplete-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #333;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item.selected {
+      background: #f0f4ff;
+    }
+
+    .autocomplete-item .repo-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #667eea;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+
+    .autocomplete-item .match {
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    /* Results Table */
+    .results-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 10px;
+    }
+
+    .results-table th {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 10px 8px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .results-table th:first-child {
+      border-radius: 8px 0 0 0;
+      width: 140px;
+    }
+
+    .results-table th:last-child {
+      border-radius: 0 8px 0 0;
+    }
+
+    .results-table td {
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-bottom: 1px solid #eee;
+      transition: all 0.3s;
+      opacity: 0;
+      transform: rotateX(90deg);
+    }
+
+    .results-table td.revealed {
+      opacity: 1;
+      transform: rotateX(0deg);
+    }
+
+    .results-table tr:last-child td:first-child {
+      border-radius: 0 0 0 8px;
+    }
+
+    .results-table tr:last-child td:last-child {
+      border-radius: 0 0 8px 0;
+    }
+
+    .guess-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .guess-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.65rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .guess-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      line-height: 1.2;
+    }
+
+    td.correct {
+      background: #4caf50;
+      color: #fff;
+    }
+
+    td.partial {
+      background: #ff9800;
+      color: #fff;
+    }
+
+    td.wrong {
+      background: #ef5350;
+      color: #fff;
+    }
+
+    .message {
+      text-align: center;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      min-height: 50px;
+    }
+
+    .message.success { color: #4caf50; }
+    .message.fail { color: #ef5350; }
+    .message.error { color: #ff9800; }
+
+    .footer-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn-new {
+      padding: 12px 24px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-new:hover { background: #5a6fd6; }
+
+    .stats-bar {
+      text-align: center;
+      margin-top: 12px;
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .stats-bar span { color: #333; font-weight: 600; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      .game-container { padding: 16px; }
+      .results-table th, .results-table td { padding: 6px 4px; font-size: 0.65rem; }
+      .guess-icon { width: 28px; height: 28px; font-size: 0.55rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Guess The Repo! 🎯</h1>
+    <p>Guess the mystery project from the MESS workspace</p>
+  </header>
+
+  <div class="game-container">
+    <div class="input-row">
+      <input type="text" id="guess-input" placeholder="Start typing a project name..." autocomplete="off" spellcheck="false" />
+      <button class="btn-guess" id="submit-btn">Guess</button>
+      <div class="autocomplete" id="autocomplete"></div>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <table class="results-table" id="results-table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Language</th>
+          <th>Type</th>
+          <th>Channel</th>
+          <th>Runtime</th>
+          <th>Team</th>
+          <th>Account</th>
+        </tr>
+      </thead>
+      <tbody id="results-body">
+      </tbody>
+    </table>
+
+    <div class="empty-state" id="empty-state">
+      Start guessing! Type a project name above.
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn-new" id="new-game-btn">New Game</button>
+    </div>
+
+    <div class="stats-bar" id="stats-bar"></div>
+  </div>
+
+  <script>
+    let PROJECTS = [];
+
+    const COLORS = [
+      "#667eea", "#764ba2", "#f093fb", "#4facfe",
+      "#43e97b", "#fa709a", "#fee140", "#30cfd0",
+      "#a18cd1", "#fbc2eb", "#84fab0", "#8fd3f4",
+      "#d4fc79", "#ff9a9e", "#ffecd2", "#a1c4fd",
+    ];
+
+    function getProjectColor(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return COLORS[Math.abs(hash) % COLORS.length];
+    }
+
+    function getInitials(name) {
+      return name.split("-").map(w => w[0]).join("").toUpperCase().slice(0, 3);
+    }
+
+    let target = null;
+    let guesses = [];
+    let gameOver = false;
+    let maxGuesses = 8;
+    let selectedIdx = -1;
+    let wins = parseInt(localStorage.getItem("gtr-wins") || "0");
+    let games = parseInt(localStorage.getItem("gtr-games") || "0");
+
+    function pickTarget() {
+      return PROJECTS[Math.floor(Math.random() * PROJECTS.length)];
+    }
+
+    function startGame() {
+      target = pickTarget();
+      guesses = [];
+      gameOver = false;
+      selectedIdx = -1;
+      document.getElementById("guess-input").value = "";
+      document.getElementById("guess-input").disabled = false;
+      document.getElementById("submit-btn").disabled = false;
+      document.getElementById("message").textContent = "";
+      document.getElementById("message").className = "message";
+      document.getElementById("results-body").innerHTML = "";
+      document.getElementById("empty-state").style.display = "block";
+      updateStats();
+    }
+
+    function compare(guessVal, targetVal) {
+      if (guessVal === targetVal) return "correct";
+      // Partial: for multi-value or overlapping concepts
+      const gLower = guessVal.toLowerCase();
+      const tLower = targetVal.toLowerCase();
+      if (gLower.includes(tLower) || tLower.includes(gLower)) return "partial";
+      // Check if they share a word
+      const gWords = gLower.split(/[\s\/,]+/);
+      const tWords = tLower.split(/[\s\/,]+/);
+      for (const w of gWords) {
+        if (w.length > 2 && tWords.includes(w)) return "partial";
+      }
+      return "wrong";
+    }
+
+    function submitGuess() {
+      if (gameOver) return;
+      const input = document.getElementById("guess-input");
+      const val = input.value.trim().toLowerCase();
+      const msg = document.getElementById("message");
+
+      if (!val) {
+        msg.textContent = "Type a project name!";
+        msg.className = "message error";
+        return;
+      }
+
+      const project = PROJECTS.find(p => p.name === val);
+      if (!project) {
+        msg.textContent = "Not in the project list!";
+        msg.className = "message error";
+        return;
+      }
+
+      if (guesses.includes(val)) {
+        msg.textContent = "Already guessed that one!";
+        msg.className = "message error";
+        return;
+      }
+
+      guesses.push(val);
+      input.value = "";
+      hideAutocomplete();
+      document.getElementById("empty-state").style.display = "none";
+
+      // Add row
+      addResultRow(project);
+
+      if (project.name === target.name) {
+        gameOver = true;
+        wins++;
+        games++;
+        localStorage.setItem("gtr-wins", wins);
+        localStorage.setItem("gtr-games", games);
+        msg.textContent = `🎉 Got it in ${guesses.length} guess${guesses.length > 1 ? "es" : ""}!`;
+        msg.className = "message success";
+        input.disabled = true;
+      } else if (guesses.length >= maxGuesses) {
+        gameOver = true;
+        games++;
+        localStorage.setItem("gtr-games", games);
+        msg.textContent = `💀 It was: ${target.name}`;
+        msg.className = "message fail";
+        input.disabled = true;
+      } else {
+        msg.textContent = `${maxGuesses - guesses.length} guesses remaining`;
+        msg.className = "message";
+      }
+
+      updateStats();
+    }
+
+    function addResultRow(project) {
+      const tbody = document.getElementById("results-body");
+      const tr = document.createElement("tr");
+
+      // Project name cell (reveals immediately)
+      const nameTd = document.createElement("td");
+      const color = getProjectColor(project.name);
+      nameTd.innerHTML = `
+        <div class="guess-name-cell">
+          <div class="guess-icon" style="background: ${color}">${getInitials(project.name)}</div>
+          <div class="guess-label">${project.name}</div>
+        </div>
+      `;
+      nameTd.classList.add("revealed");
+      tr.appendChild(nameTd);
+
+      // Attribute cells with staggered reveal
+      const attrs = ["language", "type", "channel", "runtime", "team", "account"];
+      attrs.forEach((attr, idx) => {
+        const td = document.createElement("td");
+        const result = compare(project[attr], target[attr]);
+        td.className = result;
+        td.textContent = project[attr];
+        td.style.transition = `opacity 0.4s ease ${(idx + 1) * 0.15}s, transform 0.4s ease ${(idx + 1) * 0.15}s`;
+        tr.appendChild(td);
+
+        // Trigger reveal after a frame
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            td.classList.add("revealed");
+          });
+        });
+      });
+
+      // Insert at top
+      if (tbody.firstChild) {
+        tbody.insertBefore(tr, tbody.firstChild);
+      } else {
+        tbody.appendChild(tr);
+      }
+    }
+
+    function updateStats() {
+      const el = document.getElementById("stats-bar");
+      if (games > 0) {
+        const pct = Math.round((wins / games) * 100);
+        el.innerHTML = `Played: <span>${games}</span> · Won: <span>${wins}</span> · Win rate: <span>${pct}%</span>`;
+      }
+    }
+
+    // Autocomplete
+    function showAutocomplete(query) {
+      const container = document.getElementById("autocomplete");
+      if (!query) { hideAutocomplete(); return; }
+
+      const guessed = new Set(guesses);
+      const matches = PROJECTS
+        .filter(p => p.name.includes(query) && !guessed.has(p.name))
+        .slice(0, 8);
+
+      if (!matches.length) { hideAutocomplete(); return; }
+
+      container.innerHTML = "";
+      matches.forEach((proj, idx) => {
+        const item = document.createElement("div");
+        item.className = "autocomplete-item" + (idx === selectedIdx ? " selected" : "");
+
+        const color = getProjectColor(proj.name);
+        const initials = getInitials(proj.name);
+
+        const matchIdx = proj.name.indexOf(query);
+        const before = proj.name.slice(0, matchIdx);
+        const match = proj.name.slice(matchIdx, matchIdx + query.length);
+        const after = proj.name.slice(matchIdx + query.length);
+
+        item.innerHTML = `
+          <div class="repo-icon" style="background: ${color}">${initials}</div>
+          <span>${before}<span class="match">${match}</span>${after}</span>
+        `;
+
+        item.addEventListener("click", () => {
+          document.getElementById("guess-input").value = proj.name;
+          hideAutocomplete();
+          document.getElementById("guess-input").focus();
+        });
+        container.appendChild(item);
+      });
+
+      container.classList.add("visible");
+    }
+
+    function hideAutocomplete() {
+      document.getElementById("autocomplete").classList.remove("visible");
+      selectedIdx = -1;
+    }
+
+    // Events
+    const input = document.getElementById("guess-input");
+
+    input.addEventListener("input", (e) => {
+      selectedIdx = -1;
+      showAutocomplete(e.target.value.trim().toLowerCase());
+    });
+
+    input.addEventListener("keydown", (e) => {
+      const container = document.getElementById("autocomplete");
+      const items = container.querySelectorAll(".autocomplete-item");
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        selectedIdx = Math.min(selectedIdx + 1, items.length - 1);
+        updateSelection(items);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        selectedIdx = Math.max(selectedIdx - 1, -1);
+        updateSelection(items);
+      } else if (e.key === "Enter") {
+        const container = document.getElementById("autocomplete");
+        if (container.classList.contains("visible") && items.length > 0) {
+          // If user hasn't arrowed, pick the first suggestion; otherwise pick the selected one
+          e.preventDefault();
+          const pickIdx = selectedIdx >= 0 ? selectedIdx : 0;
+          const query = input.value.trim().toLowerCase();
+          const matches = PROJECTS.filter(p => p.name.includes(query) && !new Set(guesses).has(p.name));
+          const name = matches[pickIdx]?.name;
+          if (name) {
+            input.value = name;
+            hideAutocomplete();
+            submitGuess();
+          }
+        } else {
+          submitGuess();
+        }
+      } else if (e.key === "Escape") {
+        hideAutocomplete();
+      }
+    });
+
+    input.addEventListener("blur", () => { setTimeout(hideAutocomplete, 200); });
+
+    function updateSelection(items) {
+      items.forEach((item, idx) => {
+        item.classList.toggle("selected", idx === selectedIdx);
+      });
+    }
+
+    document.getElementById("submit-btn").addEventListener("click", submitGuess);
+    document.getElementById("new-game-btn").addEventListener("click", startGame);
+
+    // Load projects from external file, then start
+    fetch('./projects.json')
+      .then(res => res.json())
+      .then(data => {
+        PROJECTS = data;
+        startGame();
+      })
+      .catch(err => {
+        document.getElementById("message").textContent = "Failed to load projects.json";
+        document.getElementById("message").className = "message error";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>

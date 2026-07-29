@@ -1,0 +1,14 @@
+[
+  { "name": "apns-connector", "language": "TypeScript", "type": "Connector", "channel": "Push", "runtime": "Lambda", "team": "GPNS", "account": "Digital" },
+  { "name": "auth-client", "language": "TypeScript", "type": "Backend", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
+  { "name": "certiorem", "language": "TypeScript", "type": "Backend", "channel": "Push", "runtime": "Lambda", "team": "Web Messaging", "account": "Digital" },
+  { "name": "fcm-connector", "language": "TypeScript", "type": "Connector", "channel": "Push", "runtime": "Lambda", "team": "GPNS", "account": "Digital" },
+  { "name": "messaging-connector-library", "language": "TypeScript", "type": "Library", "channel": "All", "runtime": "N/A", "team": "Web Messaging", "account": "N/A" },
+  { "name": "messaging-connector-webmessaging", "language": "TypeScript", "type": "Connector", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Digital" },
+  { "name": "messaging-schema", "language": "Multi", "type": "Library", "channel": "All", "runtime": "N/A", "team": "Web Messaging", "account": "N/A" },
+  { "name": "shyrka", "language": "TypeScript", "type": "Backend", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
+  { "name": "squonk", "language": "Java", "type": "Backend", "channel": "Webmessaging (GBM)", "runtime": "ECS", "team": "Squonk", "account": "Core" },
+  { "name": "thandora", "language": "TypeScript", "type": "Backend", "channel": "Push", "runtime": "Lambda", "team": "GPNS", "account": "Digital" },
+  { "name": "themis", "language": "TypeScript", "type": "Frontend", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
+  { "name": "webmessaging-oauthmockserver", "language": "TypeScript", "type": "Tooling", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" }
+]
