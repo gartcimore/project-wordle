@@ -322,10 +322,12 @@
     </div>
 
     <div class="footer-actions">
-      <button class="btn-new" id="new-game-btn">New Game</button>
+      <button class="btn-new" id="new-game-btn" style="display:none">New Game</button>
+      <button class="btn-new" id="endless-btn" style="display:none">🔄 Endless Mode</button>
     </div>
 
     <div class="stats-bar" id="stats-bar"></div>
+    <div class="stats-bar" id="mode-label" style="margin-top:8px; font-weight:600; color:#667eea;"></div>
   </div>
 
   <script>
@@ -350,6 +352,8 @@
       return name.split("-").map(w => w[0]).join("").toUpperCase().slice(0, 3);
     }
 
+    // Mode: "daily" or "endless"
+    let mode = "daily";
     let target = null;
     let guesses = [];
     let gameOver = false;
@@ -358,8 +362,60 @@
     let wins = parseInt(localStorage.getItem("gtr-wins") || "0");
     let games = parseInt(localStorage.getItem("gtr-games") || "0");
 
+    function getTodayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+
+    function getDailyIndex() {
+      // Deterministic pick based on date
+      const today = getTodayKey();
+      let hash = 0;
+      for (let i = 0; i < today.length; i++) {
+        hash = today.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return Math.abs(hash) % PROJECTS.length;
+    }
+
+    function isDailySolved() {
+      return localStorage.getItem("gtr-daily-" + getTodayKey()) === "solved";
+    }
+
+    function markDailySolved() {
+      localStorage.setItem("gtr-daily-" + getTodayKey(), "solved");
+    }
+
+    function getDailyGuesses() {
+      const saved = localStorage.getItem("gtr-daily-guesses-" + getTodayKey());
+      return saved ? JSON.parse(saved) : [];
+    }
+
+    function saveDailyGuesses() {
+      if (mode === "daily") {
+        localStorage.setItem("gtr-daily-guesses-" + getTodayKey(), JSON.stringify(guesses));
+      }
+    }
+
     function pickTarget() {
+      if (mode === "daily") {
+        return PROJECTS[getDailyIndex()];
+      }
       return PROJECTS[Math.floor(Math.random() * PROJECTS.length)];
+    }
+
+    function updateModeUI() {
+      const modeLabel = document.getElementById("mode-label");
+      const endlessBtn = document.getElementById("endless-btn");
+
+      if (mode === "daily") {
+        modeLabel.textContent = `Daily Challenge · ${getTodayKey()}`;
+        endlessBtn.style.display = isDailySolved() ? "inline-block" : "none";
+        document.getElementById("new-game-btn").style.display = "none";
+      } else {
+        modeLabel.textContent = "Endless Mode";
+        endlessBtn.style.display = "none";
+        document.getElementById("new-game-btn").style.display = "inline-block";
+      }
     }
 
     function startGame() {
@@ -374,7 +430,44 @@
       document.getElementById("message").className = "message";
       document.getElementById("results-body").innerHTML = "";
       document.getElementById("empty-state").style.display = "block";
+      updateModeUI();
       updateStats();
+
+      // Restore daily guesses if resuming
+      if (mode === "daily") {
+        const saved = getDailyGuesses();
+        if (saved.length > 0) {
+          document.getElementById("empty-state").style.display = "none";
+          saved.forEach(name => {
+            const project = PROJECTS.find(p => p.name === name);
+            if (project) {
+              guesses.push(name);
+              addResultRow(project, true); // instant reveal for restored guesses
+            }
+          });
+
+          if (isDailySolved()) {
+            gameOver = true;
+            document.getElementById("guess-input").disabled = true;
+            document.getElementById("message").textContent = `🎉 Solved today's challenge in ${guesses.length}!`;
+            document.getElementById("message").className = "message success";
+            updateModeUI();
+          } else if (guesses.length >= maxGuesses) {
+            gameOver = true;
+            document.getElementById("guess-input").disabled = true;
+            document.getElementById("message").textContent = `💀 It was: ${target.name}`;
+            document.getElementById("message").className = "message fail";
+          } else {
+            document.getElementById("message").textContent = `${maxGuesses - guesses.length} guesses remaining`;
+            document.getElementById("message").className = "message";
+          }
+        }
+      }
+    }
+
+    function startEndless() {
+      mode = "endless";
+      startGame();
     }
 
     function compare(guessVal, targetVal) {
@@ -434,6 +527,10 @@
         msg.textContent = `🎉 Got it in ${guesses.length} guess${guesses.length > 1 ? "es" : ""}!`;
         msg.className = "message success";
         input.disabled = true;
+        if (mode === "daily") {
+          markDailySolved();
+          updateModeUI();
+        }
       } else if (guesses.length >= maxGuesses) {
         gameOver = true;
         games++;
@@ -446,10 +543,11 @@
         msg.className = "message";
       }
 
+      saveDailyGuesses();
       updateStats();
     }
 
-    function addResultRow(project) {
+    function addResultRow(project, instant = false) {
       const tbody = document.getElementById("results-body");
       const tr = document.createElement("tr");
 
@@ -472,15 +570,19 @@
         const result = compare(project[attr], target[attr]);
         td.className = result;
         td.textContent = project[attr];
-        td.style.transition = `opacity 0.4s ease ${(idx + 1) * 0.15}s, transform 0.4s ease ${(idx + 1) * 0.15}s`;
-        tr.appendChild(td);
 
-        // Trigger reveal after a frame
-        requestAnimationFrame(() => {
+        if (instant) {
+          td.classList.add("revealed");
+        } else {
+          td.style.transition = `opacity 0.4s ease ${(idx + 1) * 0.15}s, transform 0.4s ease ${(idx + 1) * 0.15}s`;
           requestAnimationFrame(() => {
-            td.classList.add("revealed");
+            requestAnimationFrame(() => {
+              td.classList.add("revealed");
+            });
           });
-        });
+        }
+
+        tr.appendChild(td);
       });
 
       // Insert at top
@@ -597,12 +699,14 @@
 
     document.getElementById("submit-btn").addEventListener("click", submitGuess);
     document.getElementById("new-game-btn").addEventListener("click", startGame);
+    document.getElementById("endless-btn").addEventListener("click", startEndless);
 
     // Load projects from external file, then start
     fetch('./projects.json')
       .then(res => res.json())
       .then(data => {
         PROJECTS = data;
+        mode = "daily";
         startGame();
       })
       .catch(err => {
