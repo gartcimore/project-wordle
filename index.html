@@ -279,6 +279,79 @@
       font-size: 0.9rem;
     }
 
+    /* Victory overlay */
+    .victory-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .victory-overlay.active {
+      display: block;
+    }
+
+    .victory-banner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px 48px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      z-index: 1001;
+      animation: bannerPop 0.5s ease 0.3s forwards;
+      pointer-events: auto;
+    }
+
+    .victory-banner h2 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      color: #1a1a2e;
+    }
+
+    .victory-banner p {
+      font-size: 1.1rem;
+      color: #4caf50;
+      font-weight: 600;
+    }
+
+    .victory-banner .close-btn {
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    @keyframes bannerPop {
+      0% { transform: translate(-50%, -50%) scale(0); }
+      80% { transform: translate(-50%, -50%) scale(1.05); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -10px;
+      z-index: 1000;
+      pointer-events: none;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
     @media (max-width: 600px) {
       .game-container { padding: 16px; }
       .results-table th, .results-table td { padding: 6px 4px; font-size: 0.65rem; }
@@ -328,6 +401,14 @@
 
     <div class="stats-bar" id="stats-bar"></div>
     <div class="stats-bar" id="mode-label" style="margin-top:8px; font-weight:600; color:#667eea;"></div>
+  </div>
+
+  <div class="victory-overlay" id="victory-overlay">
+    <div class="victory-banner" id="victory-banner">
+      <h2>🎉 You got it!</h2>
+      <p id="victory-text"></p>
+      <button class="close-btn" id="close-victory">Nice!</button>
+    </div>
   </div>
 
   <script>
@@ -470,6 +551,55 @@
       startGame();
     }
 
+    function showVictory(numGuesses) {
+      const overlay = document.getElementById("victory-overlay");
+      const text = document.getElementById("victory-text");
+      text.textContent = `Solved in ${numGuesses} guess${numGuesses > 1 ? "es" : ""}!`;
+      overlay.classList.add("active");
+      launchConfetti();
+    }
+
+    function hideVictory() {
+      const overlay = document.getElementById("victory-overlay");
+      overlay.classList.remove("active");
+      // Reset banner animation
+      const banner = document.getElementById("victory-banner");
+      banner.style.animation = "none";
+      banner.offsetHeight; // reflow
+      banner.style.animation = "";
+    }
+
+    function launchConfetti() {
+      const colors = ["#667eea", "#764ba2", "#4caf50", "#ff9800", "#ef5350", "#4facfe", "#43e97b", "#fa709a", "#fee140"];
+      const shapes = ["square", "circle"];
+
+      for (let i = 0; i < 80; i++) {
+        const el = document.createElement("div");
+        el.className = "confetti";
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const size = Math.random() * 8 + 6;
+        const left = Math.random() * 100;
+        const duration = Math.random() * 2 + 2;
+        const delay = Math.random() * 1.5;
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+
+        el.style.left = `${left}%`;
+        el.style.width = `${size}px`;
+        el.style.height = `${size}px`;
+        el.style.background = color;
+        el.style.borderRadius = shape === "circle" ? "50%" : "2px";
+        el.style.animationDuration = `${duration}s`;
+        el.style.animationDelay = `${delay}s`;
+
+        document.body.appendChild(el);
+
+        // Clean up after animation
+        setTimeout(() => el.remove(), (duration + delay) * 1000 + 100);
+      }
+    }
+
+    document.getElementById("close-victory").addEventListener("click", hideVictory);
+
     function compare(guessVal, targetVal) {
       if (guessVal === targetVal) return "correct";
       // Partial: for multi-value or overlapping concepts
@@ -531,6 +661,8 @@
           markDailySolved();
           updateModeUI();
         }
+        // Celebrate!
+        setTimeout(() => showVictory(guesses.length), 800);
       } else if (guesses.length >= maxGuesses) {
         gameOver = true;
         games++;
