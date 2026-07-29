@@ -599,6 +599,11 @@
     }
 
     document.getElementById("close-victory").addEventListener("click", hideVictory);
+    document.addEventListener("keydown", (e) => {
+      if ((e.key === "Enter" || e.key === "Escape") && document.getElementById("victory-overlay").classList.contains("active")) {
+        hideVictory();
+      }
+    });
 
     function compare(guessVal, targetVal) {
       if (guessVal === targetVal) return "correct";
