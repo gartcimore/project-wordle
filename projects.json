@@ -16,6 +16,7 @@
   { "name": "themis", "language": "TypeScript", "type": "Frontend", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
   { "name": "webmessaging-oauthmockserver", "language": "TypeScript", "type": "Tooling", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
   { "name": "postino", "language": "Java", "type": "Backend", "channel": "Email", "runtime": "EC2", "team": "Email", "account": "Core" },
+  { "name": "email-platform", "language": "Java", "type": "Backend", "channel": "Email", "runtime": "Lambda", "team": "Email Platform", "account": "Digital" },
   { "name": "email-connector-imap", "language": "Java", "type": "Connector", "channel": "Email", "runtime": "EC2", "team": "Email Platform", "account": "Digital" },
-  { "name": "email-connector-graph", "language": "Java", "type": "Connector", "channel": "Email", "runtime": "ECS", "team": "Email Platform", "account": "Digital" }
+  { "name": "email-connector-graph", "language": "Java", "type": "Connector", "channel": "Email", "runtime": "Lambda", "team": "Email Platform", "account": "Digital" }
 ]
