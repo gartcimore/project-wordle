@@ -804,6 +804,18 @@
         e.preventDefault();
         selectedIdx = Math.max(selectedIdx - 1, -1);
         updateSelection(items);
+      } else if (e.key === "Tab") {
+        if (container.classList.contains("visible") && items.length > 0) {
+          e.preventDefault();
+          const pickIdx = selectedIdx >= 0 ? selectedIdx : 0;
+          const query = input.value.trim().toLowerCase();
+          const matches = PROJECTS.filter(p => p.name.includes(query) && !new Set(guesses).has(p.name));
+          const name = matches[pickIdx]?.name;
+          if (name) {
+            input.value = name;
+            hideAutocomplete();
+          }
+        }
       } else if (e.key === "Enter") {
         const container = document.getElementById("autocomplete");
         if (container.classList.contains("visible") && items.length > 0) {
