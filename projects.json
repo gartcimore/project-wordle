@@ -3,7 +3,7 @@
   { "name": "auth-client", "language": "TypeScript", "type": "Backend", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
   { "name": "certiorem", "language": "TypeScript", "type": "Backend", "channel": "Push", "runtime": "Lambda", "team": "Web Messaging", "account": "Digital" },
   { "name": "fcm-connector", "language": "TypeScript", "type": "Connector", "channel": "Push", "runtime": "Lambda", "team": "GPNS", "account": "Digital" },
-  { "name": "messaging-connector-library", "language": "TypeScript", "type": "Library", "channel": "All", "runtime": "N/A", "team": "Web Messaging", "account": "N/A" },
+  { "name": "messaging-connector-library", "language": "TypeScript", "type": "Library", "channel": "All", "runtime": "N/A", "team": "Multiple", "account": "N/A" },
   { "name": "messaging-connector-webmessaging", "language": "TypeScript", "type": "Connector", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Digital / Core" },
   { "name": "messaging-connector-apple", "language": "TypeScript", "type": "Connector", "channel": "Apple", "runtime": "Lambda", "team": "AAPL", "account": "Digital" },
   { "name": "messaging-connector-open", "language": "TypeScript", "type": "Connector", "channel": "Open", "runtime": "Lambda", "team": "Platypus Core", "account": "Digital" },
