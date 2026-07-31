@@ -407,6 +407,7 @@
     <div class="victory-banner" id="victory-banner">
       <h2>🎉 You got it!</h2>
       <p id="victory-text"></p>
+      <div id="victory-grid" style="margin-top:12px;"></div>
       <button class="close-btn" id="close-victory">Nice!</button>
     </div>
   </div>
@@ -555,6 +556,31 @@
       const overlay = document.getElementById("victory-overlay");
       const text = document.getElementById("victory-text");
       text.textContent = `Solved in ${numGuesses} guess${numGuesses > 1 ? "es" : ""}!`;
+
+      // Build mini result grid
+      const gridEl = document.getElementById("victory-grid");
+      gridEl.innerHTML = "";
+      const attrs = ["language", "type", "channel", "runtime", "team", "account"];
+      guesses.forEach(name => {
+        const project = PROJECTS.find(p => p.name === name);
+        if (!project) return;
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.gap = "3px";
+        row.style.justifyContent = "center";
+        row.style.marginBottom = "3px";
+        attrs.forEach(attr => {
+          const cell = document.createElement("div");
+          const result = compare(project[attr], target[attr]);
+          cell.style.width = "20px";
+          cell.style.height = "20px";
+          cell.style.borderRadius = "3px";
+          cell.style.background = result === "correct" ? "#4caf50" : result === "partial" ? "#ff9800" : "#ef5350";
+          row.appendChild(cell);
+        });
+        gridEl.appendChild(row);
+      });
+
       overlay.classList.add("active");
       launchConfetti();
     }
