@@ -279,6 +279,73 @@
       font-size: 0.9rem;
     }
 
+    /* Results card */
+    .results-card {
+      display: none;
+      background: #fffde6;
+      border: 2px solid #e0d9a8;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .results-card.visible {
+      display: block;
+    }
+
+    .results-card-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    .results-card-tries {
+      font-size: 0.9rem;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .results-card-grid {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 12px;
+    }
+
+    .results-card-row {
+      display: flex;
+      gap: 3px;
+      justify-content: center;
+    }
+
+    .results-card-cell {
+      width: 22px;
+      height: 22px;
+      border-radius: 3px;
+    }
+
+    .results-card-url {
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .btn-copy {
+      padding: 10px 20px;
+      background: #1a1a2e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-copy:hover { background: #2d2d5e; }
+
     /* Victory overlay */
     .victory-overlay {
       display: none;
@@ -399,6 +466,14 @@
       <button class="btn-new" id="endless-btn" style="display:none">🔄 Endless Mode</button>
     </div>
 
+    <div class="results-card" id="results-card">
+      <div class="results-card-title" id="results-card-title"></div>
+      <div class="results-card-tries" id="results-card-tries"></div>
+      <div class="results-card-grid" id="results-card-grid"></div>
+      <div class="results-card-url">Play now at https://gartcimore.github.io/project-wordle/</div>
+      <button class="btn-copy" id="btn-copy">📋 Copy</button>
+    </div>
+
     <div class="stats-bar" id="stats-bar"></div>
     <div class="stats-bar" id="mode-label" style="margin-top:8px; font-weight:600; color:#667eea;"></div>
   </div>
@@ -512,6 +587,7 @@
       document.getElementById("message").className = "message";
       document.getElementById("results-body").innerHTML = "";
       document.getElementById("empty-state").style.display = "block";
+      hideResultsCard();
       updateModeUI();
       updateStats();
 
@@ -593,6 +669,8 @@
       banner.style.animation = "none";
       banner.offsetHeight; // reflow
       banner.style.animation = "";
+      // Show results card in main window
+      showResultsCard();
     }
 
     function launchConfetti() {
@@ -629,6 +707,76 @@
       if ((e.key === "Enter" || e.key === "Escape") && document.getElementById("victory-overlay").classList.contains("active")) {
         hideVictory();
       }
+    });
+
+    function buildResultsEmoji() {
+      const attrs = ["language", "type", "channel", "runtime", "team", "account"];
+      const lines = guesses.map(name => {
+        const project = PROJECTS.find(p => p.name === name);
+        if (!project) return "";
+        return attrs.map(attr => {
+          const result = compare(project[attr], target[attr]);
+          if (result === "correct") return "🟩";
+          if (result === "partial") return "🟨";
+          return "🟥";
+        }).join("");
+      });
+      return lines.join("\n");
+    }
+
+    function getShareText() {
+      const date = getTodayKey();
+      const emoji = buildResultsEmoji();
+      const header = mode === "daily"
+        ? `Guess The Repo ${date} ✅ ${guesses.length} tries`
+        : `Guess The Repo (Endless) ✅ ${guesses.length} tries`;
+      return `${header}\n${emoji}\nPlay now at https://gartcimore.github.io/project-wordle/`;
+    }
+
+    function showResultsCard() {
+      const card = document.getElementById("results-card");
+      const title = document.getElementById("results-card-title");
+      const tries = document.getElementById("results-card-tries");
+      const grid = document.getElementById("results-card-grid");
+
+      const date = getTodayKey();
+      title.textContent = mode === "daily"
+        ? `Guess The Repo ${date} ✅`
+        : `Guess The Repo (Endless) ✅`;
+      tries.textContent = `${guesses.length} tries`;
+
+      // Build visual grid
+      grid.innerHTML = "";
+      const attrs = ["language", "type", "channel", "runtime", "team", "account"];
+      guesses.forEach(name => {
+        const project = PROJECTS.find(p => p.name === name);
+        if (!project) return;
+        const row = document.createElement("div");
+        row.className = "results-card-row";
+        attrs.forEach(attr => {
+          const cell = document.createElement("div");
+          cell.className = "results-card-cell";
+          const result = compare(project[attr], target[attr]);
+          cell.style.background = result === "correct" ? "#4caf50" : result === "partial" ? "#ff9800" : "#ef5350";
+          row.appendChild(cell);
+        });
+        grid.appendChild(row);
+      });
+
+      card.classList.add("visible");
+    }
+
+    function hideResultsCard() {
+      document.getElementById("results-card").classList.remove("visible");
+    }
+
+    document.getElementById("btn-copy").addEventListener("click", () => {
+      const text = getShareText();
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById("btn-copy");
+        btn.textContent = "✅ Copied!";
+        setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+      });
     });
 
     function compare(guessVal, targetVal) {
