@@ -610,6 +610,7 @@
             document.getElementById("message").textContent = `🎉 Solved today's challenge in ${guesses.length}!`;
             document.getElementById("message").className = "message success";
             updateModeUI();
+            showResultsCard();
           } else if (guesses.length >= maxGuesses) {
             gameOver = true;
             document.getElementById("guess-input").disabled = true;
