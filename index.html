@@ -566,7 +566,9 @@
 
       if (mode === "daily") {
         modeLabel.textContent = `Daily Challenge · ${getTodayKey()}`;
-        endlessBtn.style.display = isDailySolved() ? "inline-block" : "none";
+        // Offer Endless Mode once the daily is finished, whether solved or lost.
+        const dailyFinished = isDailySolved() || (gameOver && guesses.length >= maxGuesses);
+        endlessBtn.style.display = dailyFinished ? "inline-block" : "none";
         document.getElementById("new-game-btn").style.display = "none";
       } else {
         modeLabel.textContent = "Endless Mode";
@@ -616,8 +618,10 @@
             document.getElementById("guess-input").disabled = true;
             document.getElementById("message").textContent = `💀 It was: ${target.name}`;
             document.getElementById("message").className = "message fail";
+            updateModeUI();
           } else {
-            document.getElementById("message").textContent = `${maxGuesses - guesses.length} guesses remaining`;
+            const remainingRestore = maxGuesses - guesses.length;
+            document.getElementById("message").textContent = `${remainingRestore} guess${remainingRestore > 1 ? "es" : ""} remaining`;
             document.getElementById("message").className = "message";
           }
         }
@@ -850,8 +854,12 @@
         msg.textContent = `💀 It was: ${target.name}`;
         msg.className = "message fail";
         input.disabled = true;
+        if (mode === "daily") {
+          updateModeUI();
+        }
       } else {
-        msg.textContent = `${maxGuesses - guesses.length} guesses remaining`;
+        const remaining = maxGuesses - guesses.length;
+        msg.textContent = `${remaining} guess${remaining > 1 ? "es" : ""} remaining`;
         msg.className = "message";
       }
 
