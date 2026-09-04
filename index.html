@@ -272,6 +272,28 @@
 
     .stats-bar span { color: #333; font-weight: 600; }
 
+    /* Mode status badge (not clickable — purely informational) */
+    .mode-label-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: #eef1f8;
+      color: #6b7280;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: default;
+    }
+
     .empty-state {
       text-align: center;
       padding: 40px;
@@ -475,7 +497,9 @@
     </div>
 
     <div class="stats-bar" id="stats-bar"></div>
-    <div class="stats-bar" id="mode-label" style="margin-top:8px; font-weight:600; color:#667eea;"></div>
+    <div class="mode-label-row">
+      <span class="mode-badge" id="mode-label"></span>
+    </div>
   </div>
 
   <div class="victory-overlay" id="victory-overlay">
@@ -565,13 +589,13 @@
       const endlessBtn = document.getElementById("endless-btn");
 
       if (mode === "daily") {
-        modeLabel.textContent = `Daily Challenge · ${getTodayKey()}`;
+        modeLabel.textContent = `📅 Daily Challenge · ${getTodayKey()}`;
         // Offer Endless Mode once the daily is finished, whether solved or lost.
         const dailyFinished = isDailySolved() || (gameOver && guesses.length >= maxGuesses);
         endlessBtn.style.display = dailyFinished ? "inline-block" : "none";
         document.getElementById("new-game-btn").style.display = "none";
       } else {
-        modeLabel.textContent = "Endless Mode";
+        modeLabel.textContent = "♾️ Endless Mode";
         endlessBtn.style.display = "none";
         document.getElementById("new-game-btn").style.display = "inline-block";
       }
