@@ -11,7 +11,7 @@
   { "name": "messaging-connector-twitter", "language": "Java", "type": "Connector", "channel": "Twitter", "runtime": "Lambda", "team": "Platypus Bifrost", "account": "Digital" },
   { "name": "messaging-schema", "language": "Multi", "type": "Library", "channel": "All", "runtime": "N/A", "team": "Multiple", "account": "N/A" },
   { "name": "shyrka", "language": "TypeScript", "type": "Backend", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
-  { "name": "squonk", "language": "Java", "type": "Backend", "channel": "Webmessaging (GBM)", "runtime": "EC2", "team": "Squonk", "account": "Core" },
+  { "name": "squonk", "language": "Java", "type": "Backend", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Squonk", "account": "Core" },
   { "name": "thandora", "language": "TypeScript", "type": "Backend", "channel": "Push", "runtime": "Lambda", "team": "GPNS", "account": "Digital" },
   { "name": "themis", "language": "TypeScript", "type": "Frontend", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
   { "name": "webmessaging-oauthmockserver", "language": "TypeScript", "type": "Tooling", "channel": "Webmessaging (GBM)", "runtime": "Lambda", "team": "Web Messaging", "account": "Core" },
